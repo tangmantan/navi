@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      首屏防主题闪烁：在应用加载前根据本地存储的主题偏好预置 .dark class。
+      键名与 src/composables/useTheme.ts 中的 STORAGE_KEY 保持一致。
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('navi-theme')
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          var isDark = stored === 'dark' || ((stored === 'system' || stored === null) && prefersDark)
+          if (isDark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'
+        } catch (e) {}
+      })()
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Navi - 配置文件驱动的软件下载导航页" />
+    <title>Navi · 常用软件下载导航</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

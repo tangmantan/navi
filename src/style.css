@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+/*
+ * 暗色模式策略（Tailwind v4 写法）：
+ * 通过 <html> 上的 .dark class 切换，由 useTheme 组合式函数控制。
+ * 默认 v4 使用 prefers-color-scheme，此处改为 class 驱动以支持三种主题模式。
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 全局基础样式 */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  /*
+   * 主题切换 / hover 时颜色平滑过渡。
+   * 仅限定颜色与阴影相关属性，不影响 transform / opacity 等
+   * （元素自身的 Tailwind transition-* 工具类会覆盖此默认规则）。
+   */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * 卡片瀑布流
+ * 布局、重排与加入动画均由 vue-waterfall-mini 组件及其自带样式提供，
+ * 无需自定义过渡类。
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------
+ * 无障碍：尊重系统的「减少动态效果」偏好，关闭非必要动画
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
