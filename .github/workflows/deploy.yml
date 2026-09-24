@@ -1,16 +1,4 @@
 # GitHub Pages 自动部署工作流
-# ------------------------------------------------------------------
-# 触发：推送到 main 分支，或在 Actions 页面手动触发。
-# 流程：安装依赖 → 构建（自动推断 base 路径）→ 部署到 GitHub Pages。
-#
-# 使用前准备：
-# 1. 仓库 Settings → Pages → Source 选择「GitHub Actions」
-# 2. 推送代码到 main 分支即可，无需其他配置
-#
-# base 路径自动推断（适配两种 Pages 形式）：
-# - 仓库名为 <用户名>.github.io（用户主页站点）→ base = '/'
-# - 其他仓库名（项目站点，形如 /<仓库名>/）    → base = '/<仓库名>/'
-#   该值通过 VITE_BASE 传给 vite.config.ts 的 base 选项
 name: Deploy to GitHub Pages
 
 on:
@@ -23,7 +11,6 @@ permissions:
   pages: write
   id-token: write # Pages 部署要求 OIDC 令牌
 
-# 同一时间只保留一次部署，新推送会取消仍在进行的旧部署
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -43,9 +30,19 @@ jobs:
 
       - name: Compute base path
         id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_OVERRIDE: ${{ vars.VITE_BASE }}
         run: |
+          if [ -n "$BASE_OVERRIDE" ]; then
+            echo "base=$BASE_OVERRIDE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           REPO="${GITHUB_REPOSITORY#*/}"
-          if [[ "$REPO" == *.github.io ]]; then
+          CNAME=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.cname // ""' 2>/dev/null || echo "")
+
+          if [[ "$REPO" == *.github.io ]] || [ -n "$CNAME" ]; then
             echo "base=/" >> "$GITHUB_OUTPUT"
           else
             echo "base=/$REPO/" >> "$GITHUB_OUTPUT"
@@ -56,19 +53,12 @@ jobs:
 
       - name: Ensure config.json exists
         run: |
-          # config.json 随仓库一起提交，正常情况下此步不做任何操作；
-          # 仅在文件意外缺失时，以 config.json.example 兜底，避免构建失败
           [ -f config.json ] || cp config.json.example config.json
 
       - name: Build
         run: npm run build
         env:
-          # 传给 vite.config.ts：项目站点带子路径，用户主页为根路径
           VITE_BASE: ${{ steps.base.outputs.base }}
-          # 远程配置接口地址：从仓库变量读取（Settings → Secrets and
-          # variables → Actions → Variables → VITE_API_URL）。
-          # 未设置时为空字符串，构建产物将直接使用本地 config.json。
-          # 注意：该值会被打包进公开的 JS 文件，请勿填写私密信息。
           VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - name: Setup Pages
