@@ -1,5 +1,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { ThemeMode } from '@/types'
+import { siteConfig } from '@/config'
 
 /**
  * 主题系统组合式函数
@@ -25,21 +26,30 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-/** 从 localStorage 读取用户上次选择，非法或缺失时回退为 system */
-function readStoredMode(): ThemeMode {
+/**
+ * 读取初始主题模式：
+ * 1. localStorage 中用户上次的选择（优先级最高）
+ * 2. siteConfig.theme 配置的默认模式
+ * 3. 都缺失/非法时回退 system
+ */
+function readInitialMode(): ThemeMode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored && (THEME_MODES as readonly string[]).includes(stored)) {
       return stored as ThemeMode
     }
   } catch {
-    // 隐私模式等场景下 localStorage 可能不可用，静默回退
+    // 隐私模式等场景下 localStorage 可能不可用，继续走配置默认值
+  }
+  const configured = siteConfig.theme
+  if (configured && (THEME_MODES as readonly string[]).includes(configured)) {
+    return configured
   }
   return 'system'
 }
 
 /** 用户选择的模式（模块级单例） */
-const mode = ref<ThemeMode>(readStoredMode())
+const mode = ref<ThemeMode>(readInitialMode())
 
 /** 系统主题的实时值（初始读取一次，之后由媒体查询监听器更新） */
 const systemTheme = ref<'light' | 'dark'>(getSystemTheme())

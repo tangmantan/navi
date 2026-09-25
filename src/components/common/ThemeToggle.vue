@@ -45,7 +45,7 @@ const ariaLabel = computed(
     type="button"
     :aria-label="ariaLabel"
     :title="`${MODE_LABEL[mode]} · 点击切换为${nextModeLabel}`"
-    class="shrink-0 rounded-xl border border-slate-200 p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+    class="shrink-0 cursor-pointer rounded-xl border border-slate-200 p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
     @click="cycleMode"
   >
     <Icon :icon="modeIcon" :width="18" :height="18" aria-hidden="true" />

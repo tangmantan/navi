@@ -30,6 +30,14 @@ export interface SiteConfig {
   tagline: string
   /** 页脚内容（可选，留空则不渲染页脚） */
   footer?: string
+  /** 开源仓库地址（可选）：配置后顶栏主题按钮右侧显示 GitHub 图标链接 */
+  repo?: string
+  /**
+   * 默认主题模式（可选）：light 亮色 / dark 暗色 / system 跟随系统。
+   * 仅在用户未曾手动切换主题（localStorage 无记录）时生效；
+   * 不配置时默认 system。
+   */
+  theme?: ThemeMode
   /** 多下载地址的面板展示方式：inline 内联展开 / popover 浮层弹出 */
   downloadPanelMode: DownloadPanelMode
 }

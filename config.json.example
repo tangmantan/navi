@@ -3,6 +3,8 @@
     "name": "Navi",
     "tagline": "常用软件下载导航",
     "footer": "所有软件版权归各自所有者所有，本页面仅提供下载入口导航。",
+    "repo": "https://github.com/tangmantan/navi",
+    "theme": "system",
     "downloadPanelMode": "inline"
   },
   "software": [

@@ -6,6 +6,8 @@
  * 搜索关键词通过 v-model 向父组件双向透传，由父组件实时过滤列表。
  */
 import { siteConfig } from '@/config'
+import { Icon } from '@iconify/vue'
+import githubIcon from '@iconify-icons/lucide/github'
 import SearchBox from '@/components/common/SearchBox.vue'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
@@ -29,9 +31,21 @@ const keyword = defineModel<string>('keyword', { default: '' })
           </span>
         </a>
 
-        <!-- 右侧操作区：搜索框弹性占满剩余空间，主题按钮固定宽度 -->
+        <!-- 右侧操作区：搜索框弹性占满剩余空间，GitHub/主题按钮固定宽度 -->
         <div class="flex flex-1 items-center justify-end gap-2">
           <SearchBox v-model="keyword" class="w-full max-w-xs sm:max-w-sm" />
+          <!-- 开源仓库链接（site.repo 配置后显示），样式与主题按钮保持一致 -->
+          <a
+            v-if="siteConfig.repo"
+            :href="siteConfig.repo"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub 开源仓库"
+            title="GitHub 开源仓库"
+            class="shrink-0 cursor-pointer rounded-xl border border-slate-200 p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+          >
+            <Icon :icon="githubIcon" :width="18" :height="18" aria-hidden="true" />
+          </a>
           <ThemeToggle />
         </div>
       </div>
