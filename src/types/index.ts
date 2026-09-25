@@ -69,6 +69,12 @@ export interface SoftwareItem {
   /** 下载按钮自定义文字（可选，不配置时默认为「下载」） */
   downloadText?: string
   /**
+   * 第二个下载按钮的自定义文字（可选）：
+   * 仅在配置了 links2 时生效；不配置时回退使用 downloadText，
+   * 两者都不配置时默认为「下载」。
+   */
+  downloadText2?: string
+  /**
    * logo 颜色（可选）：仅对 Iconify 单色图标生效（如 '#07c160'）。
    * 不配置时使用默认中性色；图片地址类型的 logo 不受影响。
    */
@@ -79,4 +85,11 @@ export interface SoftwareItem {
    * - 长度大于 1 时，点击按钮展开地址列表供用户选择
    */
   links: DownloadLink[]
+  /**
+   * 第二组下载地址（可选）：配置后卡片底部并排显示第二个下载按钮，
+   * 行为与 links 完全一致（单地址直下 / 多地址展开选择）。
+   * 典型场景：同一软件提供两组不同用途的下载入口
+   * （如 32 位 / 64 位、稳定版 / 测试版）。
+   */
+  links2?: DownloadLink[]
 }

@@ -5,6 +5,7 @@
  * 卡片上半部分展示 logo、标题与说明，底部为下载按钮。
  * 下载按钮内部根据 links 数量自动处理「直下 / 展开选择」。
  */
+import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { SoftwareItem } from '@/types'
 import DownloadButton from './DownloadButton.vue'
@@ -13,6 +14,13 @@ const { item } = defineProps<{
   /** 单个软件的完整展示数据 */
   item: SoftwareItem
 }>()
+
+/** 是否存在有效的第二组下载地址（配置了非空 links2 时才渲染第二个按钮） */
+const hasSecondaryLinks = computed(() => Array.isArray(item.links2) && item.links2.length > 0)
+
+/** 两个下载按钮组件的实例引用，用于在一组展开面板时收起另一组（互斥） */
+const primaryBtnRef = ref<InstanceType<typeof DownloadButton> | null>(null)
+const secondaryBtnRef = ref<InstanceType<typeof DownloadButton> | null>(null)
 
 /**
  * 判断 logo 值是否为 Iconify 图标名（形如 `prefix:icon-name`）：
@@ -109,12 +117,21 @@ function handleLogoError(event: Event) {
           {{ item.title }}
         </h3>
         <!--
-          说明区：line-clamp-3 超出三行省略；
-          min-h-[4.875em] 固定占用三行高度（leading-relaxed 行高 1.625 × 3），
-          即使文案不足三行，所有卡片默认高度仍保持一致。
+          说明区：
+          - 普通卡片：line-clamp-3 超出三行省略，min-h-[4.875em] 固定占用
+            三行高度（leading-relaxed 行高 1.625 × 3），即使文案不足三行，
+            所有卡片默认高度仍保持一致；
+          - 双按钮卡片（links2）：底部多一个按钮（约 48px），说明区压缩为
+            单行省略（line-clamp-1，不保留三行最小高度），配合下方按钮间距
+            收紧（gap-1.5），让卡片自然高度与普通卡片基本一致。
         -->
         <p
-          class="mt-1 min-h-[4.875em] text-sm leading-relaxed text-slate-500 line-clamp-3 dark:text-slate-400"
+          class="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400"
+          :class="
+            hasSecondaryLinks
+              ? 'truncate'
+              : 'min-h-[4.875em] line-clamp-3'
+          "
         >
           {{ item.description }}
         </p>
@@ -126,7 +143,34 @@ function handleLogoError(event: Event) {
       mt-auto 将下载按钮推至卡片底部（默认高度由说明区三行占位保证一致）。
     -->
     <div class="relative z-10 mt-auto pt-5">
-      <DownloadButton :links="item.links" :download-text="item.downloadText" />
+      <!--
+        配置了第二组地址（links2）时：两个下载按钮上下堆叠，各自占满整行宽度。
+        - flex-col：垂直排列，gap-1.5 收紧上下间距，补偿说明区让出的高度，
+          使卡片整体高度与普通卡片基本一致；
+        - 点击任一组区域时借助事件冒泡收起另一组已展开的面板，保证两组互斥。
+      -->
+      <div v-if="hasSecondaryLinks" class="flex flex-col gap-1.5">
+        <div @click="secondaryBtnRef?.closePanel()">
+          <DownloadButton
+            ref="primaryBtnRef"
+            :links="item.links"
+            :download-text="item.downloadText"
+          />
+        </div>
+        <div @click="primaryBtnRef?.closePanel()">
+          <DownloadButton
+            ref="secondaryBtnRef"
+            :links="item.links2 ?? []"
+            :download-text="item.downloadText2 ?? item.downloadText"
+          />
+        </div>
+      </div>
+      <!-- 未配置 links2：保持单个下载按钮的原有布局 -->
+      <DownloadButton
+        v-else
+        :links="item.links"
+        :download-text="item.downloadText"
+      />
     </div>
   </article>
 </template>
