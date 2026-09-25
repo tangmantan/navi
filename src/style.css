@@ -12,6 +12,16 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /*
+     * 隐藏页面纵向滚动条（仍可正常滚动）。
+     * 根滚动条由 html 元素控制（设置在 body 上不生效），
+     * Firefox 用 scrollbar-width，WebKit 系用 ::-webkit-scrollbar。
+     */
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   body {
