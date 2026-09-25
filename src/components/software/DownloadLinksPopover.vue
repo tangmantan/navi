@@ -8,9 +8,11 @@
  * - 位置由父组件在打开瞬间测量按钮后通过 rootStyle 传入；
  * - 进入/离开使用透明度 + 轻微缩放上移的过渡。
  */
+import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import externalLinkIcon from '@iconify-icons/lucide/external-link'
 import type { DownloadLink } from '@/types'
+import { siteConfig } from '@/config'
 import type { CSSProperties } from 'vue'
 
 defineProps<{
@@ -30,6 +32,9 @@ const emit = defineEmits<{
   /** 点击遮罩（浮层外部） */
   (e: 'close'): void
 }>()
+
+/** 推荐徽标文案：site.recommendedText 可覆盖，默认「推荐」 */
+const recommendedLabel = computed(() => siteConfig.recommendedText?.trim() || '推荐')
 </script>
 
 <template>
@@ -68,7 +73,17 @@ const emit = defineEmits<{
               class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-blue-400"
               @click="emit('select')"
             >
-              <span class="truncate">{{ link.name }}</span>
+              <!-- min-w-0 保证名称过长时截断而不是撑破浮层 -->
+              <span class="flex min-w-0 items-center gap-1.5">
+                <span class="truncate">{{ link.name }}</span>
+                <!-- 推荐徽标：仅在地址配置 recommended: true 时显示 -->
+                <span
+                  v-if="link.recommended"
+                  class="shrink-0 rounded-md bg-green-500/15 px-1.5 py-0.5 text-xs font-medium leading-none text-green-600 dark:bg-green-400/15 dark:text-green-400"
+                >
+                  {{ recommendedLabel }}
+                </span>
+              </span>
               <Icon
                 :icon="externalLinkIcon"
                 :width="15"

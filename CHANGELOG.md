@@ -9,6 +9,7 @@ is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Optional `recommended` field on download links: when a software entry has multiple links, marking one with `"recommended": true` shows a badge next to its name in the link panel. The badge label is configurable via the new optional `site.recommendedText` field (defaults to `推荐`).
 - `website` field on software entries: clicking the card body (outside the download button) opens the official website in a new tab via a stretched link. The link is keyboard-focusable and supports Enter.
 - Optional `downloadText` field on software entries to customize the download button label (defaults to `下载`).
 - The `logo` field now also accepts an Iconify icon name (e.g. `ant-design:wechat-filled`); icon data is fetched on demand from the Iconify online API. Image URLs keep working as before.

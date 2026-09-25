@@ -9,7 +9,7 @@
  * - 0 个地址：兜底渲染为禁用按钮（正常配置不应出现，仅防御性处理）。
  * 图标直接使用 Iconify 离线数据（@iconify-icons/lucide）。
  */
-import { onUnmounted, ref, useId, type CSSProperties } from 'vue'
+import { computed, onUnmounted, ref, useId, type CSSProperties } from 'vue'
 import { Icon } from '@iconify/vue'
 import downloadIcon from '@iconify-icons/lucide/download'
 import chevronDownIcon from '@iconify-icons/lucide/chevron-down'
@@ -24,9 +24,26 @@ const props = withDefaults(
     links: DownloadLink[]
     /** 下载按钮文字，不配置时默认为「下载」 */
     downloadText?: string
+    /**
+     * 紧凑模式（用于双按钮并排场景）：
+     * - 按钮宽度随内容自适应（w-auto），不再占满整行；
+     * - 根元素 display:contents，使按钮与面板直接参与父级网格布局；
+     * - 按钮置于网格第 1 行（列号由 compactCol 指定），内联面板置于
+     *   第 2 行并 col-span-full 占满整行宽度，浮层面板宽度取整行宽度。
+     */
+    compact?: boolean
+    /** 紧凑模式下按钮所在的网格列号（1 或 2） */
+    compactCol?: 1 | 2
+    /**
+     * 显式按钮宽度（px）。用于双按钮场景下根据内容宽度精确分配：
+     * 未传时由 btnWidthClass（w-full）控制；传入后以内联 style 覆盖，
+     * 使按钮宽度按计算值精确渲染。
+     */
+    width?: number
   }>(),
   {
     downloadText: '下载',
+    compact: false,
   },
 )
 
@@ -35,6 +52,36 @@ const panelMode = siteConfig.downloadPanelMode
 
 /** 多地址面板的展开状态（inline / popover 共用） */
 const isOpen = ref(false)
+
+/**
+ * 紧凑模式下两个按钮等宽：均用 w-full 撑满各自的 1fr 网格列，
+ * 平分卡片宽度。单按钮/直连场景同样 w-full。
+ */
+const btnWidthClass = computed(() => 'w-full')
+
+/** 显式宽度样式：传入 width 时以内联 style 覆盖 w-full */
+const btnWidthStyle = computed<CSSProperties>(() =>
+  props.width != null ? { width: `${props.width}px` } : {},
+)
+
+/**
+ * 紧凑模式下按钮的网格定位：置于第 1 行，列号由 compactCol 决定。
+ * 两个按钮分别放在 (1,1) 与 (1,2)，保证始终同一行显示。
+ */
+const btnGridClass = computed(() =>
+  props.compact
+    ? ['[grid-row:1]', props.compactCol === 2 ? '[grid-column:2]' : '[grid-column:1]']
+    : '',
+)
+
+/**
+ * 紧凑模式下面板的网格定位：置于第 2 行并跨满所有列。
+ * 两组面板共享第 2 行（相互重叠），同时只有一组展开，闭合组高度为 0，
+ * 因此不会产生多余空白。
+ */
+const panelGridClass = computed(() =>
+  props.compact ? ['col-span-full', '[grid-row:2]', isOpen.value && 'mt-2'] : '',
+)
 
 /** 触发按钮的 DOM 引用（用于测量位置） */
 const triggerRef = ref<HTMLButtonElement | null>(null)
@@ -53,26 +100,42 @@ const panelId = useId()
 
 /**
  * 测量触发按钮位置并计算浮层定位：
- * - 默认显示在按钮下方，与按钮同宽；
+ * - 默认显示在按钮下方；
+ * - 紧凑模式（双按钮）下面板宽度取整行（父容器）宽度，
+ *   非紧凑模式取按钮自身宽度；
  * - 下方空间不足且上方空间更宽裕时，自动翻转到按钮上方，
  *   避免浮层超出视口。浮层高度按条目数估算（每行约 38px）。
  */
 function measurePanelStyle(): CSSProperties {
-  const rect = triggerRef.value!.getBoundingClientRect()
+  const triggerRect = triggerRef.value!.getBoundingClientRect()
+  // 紧凑模式：面板宽度 = 第一个非 display:contents 的祖先容器宽度
+  // （display:contents 元素没有盒子，getBoundingClientRect 为空矩形）
+  let widthSource: Element = triggerRef.value!
+  if (props.compact) {
+    let el: Element | null = rootRef.value?.parentElement ?? null
+    while (el) {
+      if (getComputedStyle(el).display !== 'contents') {
+        widthSource = el
+        break
+      }
+      el = el.parentElement
+    }
+  }
+  const widthRect = widthSource.getBoundingClientRect()
   const estimatedHeight = props.links.length * 38 + 12
-  const spaceBelow = window.innerHeight - rect.bottom
-  const spaceAbove = rect.top
+  const spaceBelow = window.innerHeight - triggerRect.bottom
+  const spaceAbove = triggerRect.top
   const openUpward = spaceBelow < estimatedHeight && spaceAbove > spaceBelow
 
   const style: CSSProperties = {
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
+    left: `${widthRect.left}px`,
+    width: `${widthRect.width}px`,
   }
   if (openUpward) {
     // 翻转向上：用 bottom 锚定到按钮上边缘
-    style.bottom = `${window.innerHeight - rect.top + 6}px`
+    style.bottom = `${window.innerHeight - triggerRect.top + 6}px`
   } else {
-    style.top = `${rect.bottom + 6}px`
+    style.top = `${triggerRect.bottom + 6}px`
   }
   return style
 }
@@ -146,17 +209,19 @@ defineExpose({ closePanel })
 </script>
 
 <template>
-  <div ref="rootRef">
+  <div ref="rootRef" :class="compact && 'contents'">
     <!-- 场景一：仅有一个下载地址 —— 直接跳转 -->
     <a
       v-if="links.length === 1"
       :href="links[0].url"
       target="_blank"
       rel="noopener noreferrer"
-      class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 ring-1 ring-inset ring-blue-600/10 transition-colors hover:bg-blue-100 active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-400/20 dark:hover:bg-blue-500/20"
+      class="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 ring-1 ring-inset ring-blue-600/10 transition-colors hover:bg-blue-100 active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-400/20 dark:hover:bg-blue-500/20"
+      :class="[btnWidthClass, btnGridClass]"
+      :style="btnWidthStyle"
     >
       <Icon :icon="downloadIcon" :width="17" :height="17" aria-hidden="true" class="shrink-0" />
-      <!-- min-w-0 + truncate：双按钮并排（宽度减半）时文字超长省略，避免撑破布局 -->
+      <!-- min-w-0 + truncate：文字超长省略，避免撑破布局 -->
       <span class="min-w-0 truncate">{{ downloadText }}</span>
     </a>
 
@@ -165,13 +230,15 @@ defineExpose({ closePanel })
       <button
         ref="triggerRef"
         type="button"
-        class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 ring-1 ring-inset ring-blue-600/10 transition-colors hover:bg-blue-100 active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-400/20 dark:hover:bg-blue-500/20"
+        class="flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 ring-1 ring-inset ring-blue-600/10 transition-colors hover:bg-blue-100 active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-400/20 dark:hover:bg-blue-500/20"
+        :class="[btnWidthClass, btnGridClass]"
+        :style="btnWidthStyle"
         :aria-expanded="isOpen"
         :aria-controls="panelId"
         @click="togglePanel"
       >
         <Icon :icon="downloadIcon" :width="17" :height="17" aria-hidden="true" class="shrink-0" />
-        <!-- min-w-0 + truncate：双按钮并排（宽度减半）时文字超长省略，避免撑破布局 -->
+        <!-- min-w-0 + truncate：文字超长省略，避免撑破布局 -->
         <span class="min-w-0 truncate">{{ downloadText }}</span>
         <!-- 展开时箭头旋转 180° -->
         <Icon
@@ -190,6 +257,7 @@ defineExpose({ closePanel })
         :links="links"
         :open="isOpen"
         :panel-id="panelId"
+        :class="panelGridClass"
         @select="closePanel"
       />
       <!-- 浮层模式：Teleport 到 body，卡片高度保持不变 -->
@@ -209,7 +277,9 @@ defineExpose({ closePanel })
       v-else
       type="button"
       disabled
-      class="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+      class="flex min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+      :class="[btnWidthClass, btnGridClass]"
+      :style="btnWidthStyle"
     >
       <Icon :icon="downloadIcon" :width="17" :height="17" aria-hidden="true" class="shrink-0" />
       <span class="min-w-0 truncate">暂未提供下载</span>

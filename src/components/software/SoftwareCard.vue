@@ -5,7 +5,7 @@
  * 卡片上半部分展示 logo、标题与说明，底部为下载按钮。
  * 下载按钮内部根据 links 数量自动处理「直下 / 展开选择」。
  */
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { SoftwareItem } from '@/types'
 import DownloadButton from './DownloadButton.vue'
@@ -21,6 +21,117 @@ const hasSecondaryLinks = computed(() => Array.isArray(item.links2) && item.link
 /** 两个下载按钮组件的实例引用，用于在一组展开面板时收起另一组（互斥） */
 const primaryBtnRef = ref<InstanceType<typeof DownloadButton> | null>(null)
 const secondaryBtnRef = ref<InstanceType<typeof DownloadButton> | null>(null)
+
+/** 双按钮所在的 grid 容器引用，用于读取可用宽度与字体 */
+const gridRef = ref<HTMLElement | null>(null)
+
+/** 两个按钮的计算宽度（px），传入 DownloadButton 以精确控制 */
+const primaryWidth = ref<number | undefined>(undefined)
+const secondaryWidth = ref<number | undefined>(undefined)
+
+/** 复用同一个 canvas 上下文测量文字宽度，避免反复创建 */
+let measureCtx: CanvasRenderingContext2D | null = null
+function measureTextWidth(text: string, font: string): number {
+  if (!measureCtx) {
+    measureCtx = document.createElement('canvas').getContext('2d')
+  }
+  if (!measureCtx) return text.length * 8
+  measureCtx.font = font
+  return measureCtx.measureText(text).width
+}
+
+/**
+ * 计算按钮内容的自然宽度（px）：
+ * 左右内边距(px-4=32) + 下载图标(17) + 图标间距(8) + 文字宽度
+ * + 多地址场景的下拉箭头(16)及其间距(8)。
+ */
+function contentWidth(text: string, hasChevron: boolean, font: string): number {
+  const paddingX = 32
+  const downloadIcon = 17
+  const gap = 8
+  const chevronIcon = 16
+  return paddingX + downloadIcon + gap + measureTextWidth(text, font) + (hasChevron ? gap + chevronIcon : 0)
+}
+
+/**
+ * 双按钮宽度分配策略：
+ * 1. 两按钮内容总宽 ≤ 卡片可用宽度：
+ *    - 若较宽者的内容 ≤ 半卡宽 → 两按钮等宽，各占半卡并撑满整张卡片；
+ *    - 否则等宽会截断较长文本 → 第一个按钮取内容宽度（保证文本完整），
+ *      第二个按钮占满剩余空间（同样撑满卡片）。
+ * 2. 总宽 > 可用宽度 → 文字较多的按钮挤压文字较少的按钮，
+ *    但至少保证第一个按钮（links）的文本完整显示。
+ */
+function computeWidths() {
+  const grid = gridRef.value
+  if (!grid) return
+
+  // 读取按钮真实字体与列间距，保证测量与实际渲染一致
+  const btnEl = grid.querySelector('a, button') as HTMLElement | null
+  const font = btnEl ? getComputedStyle(btnEl).font : '500 14px sans-serif'
+  const colGap = parseFloat(getComputedStyle(grid).columnGap) || 6
+  const available = grid.clientWidth - colGap
+  if (available <= 0) return
+
+  const text1 = item.downloadText ?? '下载'
+  const text2 = item.downloadText2 ?? item.downloadText ?? '下载'
+  const hasChevron1 = item.links.length > 1
+  const hasChevron2 = (item.links2?.length ?? 0) > 1
+
+  const W1 = contentWidth(text1, hasChevron1, font)
+  const W2 = contentWidth(text2, hasChevron2, font)
+
+  let w1: number
+  let w2: number
+
+  if (W1 + W2 <= available) {
+    const half = available / 2
+    if (Math.max(W1, W2) <= half) {
+      // 两按钮内容均不超过半卡：等宽撑满整张卡片
+      w1 = w2 = half
+    } else {
+      // 等宽会截断较长文本：优先保证第一个按钮文本完整，第二个占满剩余
+      w1 = W1
+      w2 = available - w1
+    }
+  } else if (W1 >= W2) {
+    // 第一个文字更多：第一个完整显示，第二个占剩余空间
+    w1 = Math.min(W1, available)
+    w2 = Math.max(0, available - w1)
+  } else {
+    // 第二个文字更多：先让第二个完整显示，第一个占剩余
+    w2 = Math.min(W2, available)
+    w1 = Math.max(0, available - w2)
+    // 至少保证第一个按钮文本完整显示
+    if (w1 < W1) {
+      w1 = Math.min(W1, available)
+      w2 = Math.max(0, available - w1)
+    }
+  }
+
+  primaryWidth.value = Math.round(w1)
+  secondaryWidth.value = Math.round(w2)
+}
+
+/** 监听卡片宽度变化（响应式布局），重新计算按钮宽度 */
+let resizeObserver: ResizeObserver | null = null
+onMounted(() => {
+  nextTick(computeWidths)
+  if (gridRef.value && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(computeWidths)
+    resizeObserver.observe(gridRef.value)
+  }
+})
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
+
+// 按钮文字变化时重新计算
+watch(
+  () => [item.downloadText, item.downloadText2, item.links.length, item.links2?.length ?? 0],
+  () => nextTick(computeWidths),
+)
 
 /**
  * 判断 logo 值是否为 Iconify 图标名（形如 `prefix:icon-name`）：
@@ -53,7 +164,7 @@ function handleLogoError(event: Event) {
 
 <template>
   <article
-    class="group relative m-2.5 flex cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700 dark:hover:shadow-lg dark:hover:shadow-blue-950/40"
+    class="group relative m-2.5 flex cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-xl dark:hover:shadow-black/60"
   >
     <!--
       整卡官网链接（stretched link）：透明 <a> 覆盖整张卡片，
@@ -117,21 +228,12 @@ function handleLogoError(event: Event) {
           {{ item.title }}
         </h3>
         <!--
-          说明区：
-          - 普通卡片：line-clamp-3 超出三行省略，min-h-[4.875em] 固定占用
-            三行高度（leading-relaxed 行高 1.625 × 3），即使文案不足三行，
-            所有卡片默认高度仍保持一致；
-          - 双按钮卡片（links2）：底部多一个按钮（约 48px），说明区压缩为
-            单行省略（line-clamp-1，不保留三行最小高度），配合下方按钮间距
-            收紧（gap-1.5），让卡片自然高度与普通卡片基本一致。
+          说明区：line-clamp-3 超出三行省略，min-h-[4.875em] 固定占用
+          三行高度（leading-relaxed 行高 1.625 × 3），即使文案不足三行，
+          所有卡片默认高度仍保持一致。
         -->
         <p
-          class="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400"
-          :class="
-            hasSecondaryLinks
-              ? 'truncate'
-              : 'min-h-[4.875em] line-clamp-3'
-          "
+          class="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400 min-h-[4.875em] line-clamp-3"
         >
           {{ item.description }}
         </p>
@@ -144,22 +246,36 @@ function handleLogoError(event: Event) {
     -->
     <div class="relative z-10 mt-auto pt-5">
       <!--
-        配置了第二组地址（links2）时：两个下载按钮上下堆叠，各自占满整行宽度。
-        - flex-col：垂直排列，gap-1.5 收紧上下间距，补偿说明区让出的高度，
-          使卡片整体高度与普通卡片基本一致；
+        配置了第二组地址（links2）时：两个下载按钮同一行显示，面板占满整行宽度。
+        - grid grid-cols-[max-content_max-content]：两个按钮各按内容宽度占一列，
+          避免被强制拉伸；gap-x-1.5 控制按钮间距；
+        - 包裹 div 与 DownloadButton 根元素均为 display:contents，使按钮与面板
+          直接成为 grid 的子项；
+        - DownloadButton 传 compact：按钮 w-auto（内容宽），内联面板 col-span-full
+          占满整行（与单按钮时宽度一致），浮层面板宽度也取整行宽度；
         - 点击任一组区域时借助事件冒泡收起另一组已展开的面板，保证两组互斥。
       -->
-      <div v-if="hasSecondaryLinks" class="flex flex-col gap-1.5">
-        <div @click="secondaryBtnRef?.closePanel()">
+      <div
+        v-if="hasSecondaryLinks"
+        ref="gridRef"
+        class="grid w-full grid-cols-[auto_auto] gap-x-1.5 items-start"
+      >
+        <div class="contents" @click="secondaryBtnRef?.closePanel()">
           <DownloadButton
             ref="primaryBtnRef"
+            compact
+            :compact-col="1"
+            :width="primaryWidth"
             :links="item.links"
             :download-text="item.downloadText"
           />
         </div>
-        <div @click="primaryBtnRef?.closePanel()">
+        <div class="contents" @click="primaryBtnRef?.closePanel()">
           <DownloadButton
             ref="secondaryBtnRef"
+            compact
+            :compact-col="2"
+            :width="secondaryWidth"
             :links="item.links2 ?? []"
             :download-text="item.downloadText2 ?? item.downloadText"
           />

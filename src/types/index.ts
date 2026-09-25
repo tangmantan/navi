@@ -20,6 +20,13 @@ export interface DownloadLink {
   name: string
   /** 下载地址（URL） */
   url: string
+  /**
+   * 是否为推荐地址（可选）：
+   * 仅在同一组存在多个下载地址时有意义——推荐地址在地址列表面板中
+   * 的名称旁显示「推荐」徽标，徽标文案由 site.recommendedText
+   * 配置（默认「推荐」）。
+   */
+  recommended?: boolean
 }
 
 /** 站点信息配置（顶部标题、副标题、页脚等页面文案） */
@@ -40,6 +47,12 @@ export interface SiteConfig {
   theme?: ThemeMode
   /** 多下载地址的面板展示方式：inline 内联展开 / popover 浮层弹出 */
   downloadPanelMode: DownloadPanelMode
+  /**
+   * 推荐下载地址的徽标文案（可选）：
+   * 某条下载地址配置 recommended: true 时，在地址列表面板中显示该徽标；
+   * 不配置时默认显示「推荐」。
+   */
+  recommendedText?: string
 }
 
 /** 软件展示条目 */

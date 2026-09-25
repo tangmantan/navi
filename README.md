@@ -4,7 +4,7 @@ English | [简体中文](./README.zh-CN.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Navi is a **config-file-driven** software download navigation page. Put the names, descriptions, icons, and download links of your favorite software into config files, and you get a navigation site with search, dark mode, and a responsive layout — without touching any component code.
+Navi is a **config-file-driven** software download navigation page. Put the names, descriptions, icons, and download links of your favorite software into config files, and you get a navigation site with search, dark mode, and a responsive layout — without touching any component code. Of course, you can also use the API endpoint to dynamically fetch software data.
 
 ## Features
 
@@ -70,6 +70,7 @@ All configuration lives in a single file: **`config.json` at the project root**,
 | `tagline` | One-line tagline, shown below the title |
 | `footer` | Footer content; set to an empty string to hide the footer |
 | `downloadPanelMode` | Multi-link panel style: `inline` (expand in place) or `popover` (floating panel) |
+| `recommendedText` | _(optional)_ Badge label shown on download links marked as `recommended`; defaults to `推荐` (Recommended) |
 | `repo` | Optional open-source repository URL. When set, a GitHub icon link appears in the header to the left of the theme toggle |
 | `theme` | Optional default theme mode: `light`, `dark`, or `system` (default). Only applies until the user switches themes manually |
 
@@ -86,8 +87,10 @@ Each software entry has the following fields:
 | `logo` | An Iconify icon name (e.g. `ant-design:wechat-filled`, fetched on demand from the Iconify API), an image URL (local path like `/icons/xxx.svg` / remote URL), or an empty string `''` to fall back to the title's first character |
 | `website` | Optional. Official website URL; clicking the card body (outside the download button) opens it in a new tab. If omitted, the card body is not clickable |
 | `downloadText` | _(optional)_ Custom download button label; defaults to `下载` (Download) |
+| `downloadText2` | _(optional)_ Custom download button label 2; defaults to `下载` (Download) |
 | `logoColor` | _(optional)_ Color for an Iconify logo (e.g. `#07c160`); no effect on image logos |
 | `links` | Array of download links: 1 item downloads directly; more than 1 opens a link panel |
+| `links2` | Array of download links 2: 1 item downloads directly; more than 1 opens a link panel |
 
 A single download link:
 
@@ -116,11 +119,13 @@ Multiple download links (just keep adding items to `links`, there is no limit):
   "logo": "/icons/example-pro.svg",
   "website": "https://example.com",
   "links": [
-    { "name": "Official site", "url": "https://example.com/download" },
+    { "name": "Official site", "url": "https://example.com/download", "recommended": true },
     { "name": "GitHub Releases", "url": "https://github.com/xxx/xxx/releases" }
   ]
 }
 ```
+
+Mark a link with `"recommended": true` to show a badge next to its name in the link panel (label from `site.recommendedText`, default `推荐`). Useful when one of several sources is your preferred choice.
 
 ### 3. Remote data source: `.env` (optional)
 

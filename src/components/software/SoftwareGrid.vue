@@ -30,7 +30,7 @@ const waterfallRef = ref<InstanceType<typeof Waterfall> | null>(null)
 /**
  * 列数断点。注意 breakPoint 收到的是「瀑布流容器宽度」而非视口宽度：
  * 容器带有 -m-2.5 负边距（-10px × 2），宽度 = section 内容宽 + 20px。
- * section 内容宽 = min(视口宽 - 32(px-4), 1248(max-w-7xl))，
+ * section 内容宽 = min(视口宽 - 32(px-4), 1440(max-w-[1440px]))，
  * 因此 Tailwind 断点 sm/lg/xl（640/1024/1280）理论映射为
  * 628 / 1012 / 1268；考虑负边距下的亚像素测量误差，阈值各留 2px
  * 余量（626 / 1010 / 1266），最多只提前 2px 换列，视觉无差异。
@@ -109,7 +109,7 @@ onBeforeUnmount(() => {
     - w-full：显式宽度。section 是 flex-column 容器 main 的子项，而
       mx-auto 的 auto 外边距在 flex 中会使元素放弃默认拉伸、改按内容
       宽度收缩；瀑布流卡片为绝对定位无法撑开父容器，缺它会坍缩成一条；
-    - max-w-7xl + mx-auto：限宽 1280px 并水平居中（窄屏由 w-full 占满）；
+    - max-w-[1440px] + mx-auto：限宽 1440px 并水平居中（窄屏由 w-full 占满）；
     - flex-1 + min-h-0：占满 main 的剩余高度，并允许在 flex 布局中收缩；
     - overflow-y-auto：仅卡片网格区域内部滚动，头部/Hero/分类栏/页脚固定；
     - overscroll-contain：滚动到边界时不发生滚动链穿透；
@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
       仍可通过滚轮 / 触控板 / 触屏正常滚动。
   -->
   <section
-    class="mx-auto w-full max-w-7xl min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-4 [scrollbar-width:none] sm:pb-10 sm:pt-6 [&::-webkit-scrollbar]:hidden"
+    class="mx-auto w-full max-w-[1440px] min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-4 [scrollbar-width:none] sm:pb-10 sm:pt-6 [&::-webkit-scrollbar]:hidden"
   >
     <!--
       Waterfall：

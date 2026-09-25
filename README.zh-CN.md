@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Navi 是一个**配置文件驱动**的软件下载导航页：把常用软件的名称、说明、图标和下载地址写进配置文件，即可得到一个带搜索、暗色模式与响应式布局的导航网站，无需改动任何组件代码。
+Navi 是一个**配置文件驱动**的软件下载导航页：把常用软件的名称、说明、图标和下载地址写进配置文件，即可得到一个带搜索、暗色模式与响应式布局的导航网站，无需改动任何组件代码。当然你也可以使用 API 接口动态获取软件数据。
 
 ## 功能特性
 
@@ -70,6 +70,7 @@ npm run preview
 | `tagline` | 一句话简介，显示在标题下方 |
 | `footer` | 页脚内容，留空字符串则不渲染页脚 |
 | `downloadPanelMode` | 多地址面板形态：`inline`（内联展开）或 `popover`（浮层弹出） |
+| `recommendedText` | _（可选）_ 标记为 `recommended` 的下载地址上显示的徽标文案，不配置时默认为「推荐」 |
 | `repo` | 可选。开源仓库地址，配置后顶栏主题按钮左侧会显示 GitHub 图标链接 |
 | `theme` | 可选。默认主题模式：`light` 亮色 / `dark` 暗色 / `system` 跟随系统（默认）。仅在用户未曾手动切换主题时生效 |
 
@@ -86,8 +87,10 @@ npm run preview
 | `logo` | Iconify 图标名（如 `ant-design:wechat-filled`，自动从 Iconify 在线 API 获取）、图片地址（本地路径如 `/icons/xxx.svg` / 网络 URL），或空字符串 `''` 时用标题首字占位 |
 | `website` | 可选。官网地址；点击卡片主体（下载按钮以外区域）在新标签页打开。不配置时卡片主体不可点击跳转 |
 | `downloadText` | _（可选）_ 下载按钮自定义文字，不配置时默认为「下载」 |
+| `downloadText2` | _（可选）_ 下载按钮2自定义文字，不配置时默认为「下载」 |
 | `logoColor` | _（可选）_ Iconify 图标的颜色（如 `#07c160`）；对图片类型的 logo 不生效 |
 | `links` | 下载地址数组：1 项为直下，多于 1 项展开地址面板 |
+| `links2` | 下载地址数组2：1 项为直下，多于 1 项展开地址面板 |
 
 单个下载地址：
 
@@ -116,11 +119,13 @@ npm run preview
   "logo": "/icons/example-pro.svg",
   "website": "https://example.com",
   "links": [
-    { "name": "官网下载", "url": "https://example.com/download" },
+    { "name": "官网下载", "url": "https://example.com/download", "recommended": true },
     { "name": "GitHub Releases", "url": "https://github.com/xxx/xxx/releases" }
   ]
 }
 ```
+
+为某个地址添加 `"recommended": true` 后，该地址在地址面板中的名称旁会显示徽标（文案来自 `site.recommendedText`，默认「推荐」），适合在多个下载源中标识你的首选。
 
 ### 3. 远程数据源：`.env`（可选）
 

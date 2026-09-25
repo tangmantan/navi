@@ -9,6 +9,7 @@
 
 ### Added
 
+- 下载地址新增可选 `recommended` 字段：软件配置了多个下载地址时，为某个地址标记 `"recommended": true` 后，该地址在地址面板中的名称旁会显示徽标。徽标文案可通过新增的可选字段 `site.recommendedText` 配置（默认「推荐」）。
 - 软件条目新增 `website` 官网地址字段：通过整卡覆盖链接（stretched link），点击卡片主体（下载按钮以外区域）在新标签页打开官网；该链接支持 Tab 聚焦与 Enter 键操作。
 - 软件条目新增可选 `downloadText` 字段，可自定义下载按钮文字（默认为「下载」）。
 - `logo` 字段支持填写 Iconify 图标名（如 `ant-design:wechat-filled`），自动从 Iconify 在线 API 获取图标；图片地址写法保持不变。

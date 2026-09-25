@@ -5,7 +5,8 @@
     "footer": "所有软件版权归各自所有者所有，本页面仅提供下载入口导航。",
     "repo": "https://github.com/tangmantan/navi",
     "theme": "system",
-    "downloadPanelMode": "inline"
+    "downloadPanelMode": "inline",
+    "recommendedText": "推荐"
   },
   "software": [
     {
@@ -37,13 +38,14 @@
       "description": "一个免费的文本编辑器，支持语法高亮和插件扩展。",
       "logo": "/icons/npp.ico",
       "website": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases",
-      "downloadText": "下载 64 位",
-      "downloadText2": "下载 32 位",
+      "downloadText": "X86_64",
+      "downloadText2": "ARM",
       "links": [
-        { "name": "Installer.x64.exe", "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.8/npp.8.9.8.Installer.x64.exe" }
+        { "name": "安装版", "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.8.1/npp.8.9.8.1.Installer.x64.exe", "recommended": true }
+        { "name": "便携式", "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.8.1/npp.8.9.8.1.portable.x64.zip" }
       ],
       "links2": [
-        { "name": "Installer.exe", "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.8/npp.8.9.8.Installer.exe" }
+        { "name": "便携式", "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.8.1/npp.8.9.8.1.portable.arm64.zip" }
       ]
     }
   ]
