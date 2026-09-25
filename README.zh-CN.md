@@ -35,6 +35,9 @@ Navi 是一个**配置文件驱动**的软件下载导航页：把常用软件�
 # 安装依赖
 npm install
 
+# 复制配置文件
+cp config.json.example config.json
+
 # 启动开发服务器（默认 http://localhost:5173）
 npm run dev
 
@@ -67,6 +70,8 @@ npm run preview
 | `tagline` | 一句话简介，显示在标题下方 |
 | `footer` | 页脚内容，留空字符串则不渲染页脚 |
 | `downloadPanelMode` | 多地址面板形态：`inline`（内联展开）或 `popover`（浮层弹出） |
+| `repo` | 可选。开源仓库地址，配置后顶栏主题按钮左侧会显示 GitHub 图标链接 |
+| `theme` | 可选。默认主题模式：`light` 亮色 / `dark` 暗色 / `system` 跟随系统（默认）。仅在用户未曾手动切换主题时生效 |
 
 ### 2. 软件列表：`config.json` 中的 `software`
 
@@ -190,10 +195,13 @@ navi/
 1. 在仓库 **Settings → Pages → Source** 中选择「GitHub Actions」。
 2. 推送代码到 `main` 分支（或在 Actions 页面手动触发工作流）。
 
-之后每次推送都会自动构建并部署。工作流会自动推断部署路径：
+之后每次推送都会自动构建并部署。工作流自动推断部署路径（三级优先级）：
 
-- 仓库名为 `<用户名>.github.io`（用户主页站点）→ 部署在域名根路径 `/`
-- 其他仓库名（项目站点）→ 部署在 `/<仓库名>/` 子路径（构建时通过 `VITE_BASE` 传入）
+1. 仓库变量 `VITE_BASE`（Settings → Variables）非空时，直接使用该值；
+2. Pages 配置了**自定义域名**（Settings → Pages → Custom domain）→ 部署在域名根路径 `/`；
+3. 仓库名为 `<用户名>.github.io` → 根路径 `/`；其他仓库名（项目站点）→ `/<仓库名>/`。
+
+> 若部署后页面空白：通常是 base 路径与实际访问路径不符。可在仓库 Variables 中创建 `VITE_BASE` 手动指定（自定义域名填 `/`，项目站点填 `/<仓库名>/`），再重新触发工作流。
 
 ### 部署到其他平台 / 手动构建
 

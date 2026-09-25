@@ -13,10 +13,12 @@
 - 软件条目新增可选 `downloadText` 字段，可自定义下载按钮文字（默认为「下载」）。
 - `logo` 字段支持填写 Iconify 图标名（如 `ant-design:wechat-filled`），自动从 Iconify 在线 API 获取图标；图片地址写法保持不变。
 - 新增可选 `logoColor` 字段，用于设置 Iconify 图标的颜色（如 `#07c160`）。
+- 新增可选 `site.repo` 字段：配置开源仓库地址后，顶栏主题切换按钮右侧显示 GitHub 图标链接（新标签页打开）；主题切换按钮与 GitHub 图标悬停时显示小手光标。
+- 新增可选 `site.theme` 字段：配置默认主题模式（`light` / `dark` / `system`），仅在用户未曾手动切换主题时生效，用户的选择仍优先并持久化到 localStorage。
 - 软件条目新增 `category` 分类字段，并在网格上方新增分类导航栏：固定首项「全部」，其后为从数据中自动汇总的所有不同分类（按首次出现顺序排列）。选择分类即可过滤网格，当前分类与搜索关键词按「与」逻辑叠加；窄屏下导航栏可横向滑动。
 - 所有配置合并为项目根目录的单一 `config.json`（`site` + `software` 两个键），取代原先的 `src/config/site.ts` 与 `src/config/software.ts`。
 - 新增可选远程数据源：在 `.env` 中配置 `VITE_API_URL`（见 `.env.example`），即可从返回结构与 `config.json` 相同的远程接口动态获取页面数据。页面先以本地数据渲染，请求成功后自动替换；未配置该变量、请求失败或响应结构不符时，自动回退到本地 `config.json`。
-- 新增 GitHub Pages 自动部署工作流（`.github/workflows/deploy.yml`）：每次推送到 `main` 自动构建并部署。部署路径自动推断——`<用户名>.github.io` 仓库部署在域名根路径，项目站点部署在 `/<仓库名>/` 子路径——并通过新增的 `VITE_BASE` 环境变量传给 `vite.config.ts`；构建时同时从仓库变量（Actions Variables）读取 `VITE_API_URL` 注入，未设置则使用本地 `config.json`。
+- 新增 GitHub Pages 自动部署工作流（`.github/workflows/deploy.yml`）：每次推送到 `main` 自动构建并部署。部署路径三级优先级推断——仓库变量 `VITE_BASE` 手动覆盖 > 检测到自定义域名则使用根路径 > 仓库名规则（`<用户名>.github.io` 为根路径，项目站点为 `/<仓库名>/`）；构建时同时从仓库变量（Actions Variables）读取 `VITE_API_URL` 注入，未设置则使用本地 `config.json`。
 - 新增 `config.json.example` 默认配置模板：`config.json` 随仓库正常提交、克隆后即可使用；需要将配置重置为默认时，从该模板复制覆盖即可。部署工作流仅在 config.json 意外缺失时才用模板兜底。
 
 ### Changed

@@ -35,6 +35,9 @@ Requirements: **Node.js 20.19 or later**.
 # Install dependencies
 npm install
 
+# Copy the example config file to start with
+cp config.json.example config.json
+
 # Start the dev server (http://localhost:5173 by default)
 npm run dev
 
@@ -67,6 +70,8 @@ All configuration lives in a single file: **`config.json` at the project root**,
 | `tagline` | One-line tagline, shown below the title |
 | `footer` | Footer content; set to an empty string to hide the footer |
 | `downloadPanelMode` | Multi-link panel style: `inline` (expand in place) or `popover` (floating panel) |
+| `repo` | Optional open-source repository URL. When set, a GitHub icon link appears in the header to the left of the theme toggle |
+| `theme` | Optional default theme mode: `light`, `dark`, or `system` (default). Only applies until the user switches themes manually |
 
 ### 2. Software list: `software` in `config.json`
 
@@ -190,10 +195,13 @@ The repo ships with a GitHub Actions workflow at [`.github/workflows/deploy.yml`
 1. In your repository, go to **Settings → Pages → Source** and select **GitHub Actions**.
 2. Push to the `main` branch (or trigger the workflow manually from the Actions tab).
 
-Every push builds the site and deploys it automatically. The workflow auto-detects the deploy path:
+Every push builds the site and deploys it automatically. The workflow detects the deploy path with a three-level priority:
 
-- Repository named `<username>.github.io` → deployed at the domain root (`/`)
-- Any other repository name → deployed at `/<repo-name>/` (passed to the build via `VITE_BASE`)
+1. If the repository variable `VITE_BASE` (Settings → Variables) is set, that value is used;
+2. If a **custom domain** is configured for Pages (Settings → Pages → Custom domain) → deployed at the domain root `/`;
+3. Repository named `<username>.github.io` → root `/`; any other repository name (project site) → `/<repo-name>/`.
+
+> Blank page after deploying? The base path usually doesn't match the actual URL. Create a `VITE_BASE` repository variable to set it manually (`/` for a custom domain, `/<repo-name>/` for a project site), then re-run the workflow.
 
 ### Deploying elsewhere / manual build
 
