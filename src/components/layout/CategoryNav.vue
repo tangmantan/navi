@@ -26,7 +26,8 @@ function select(value: string) {
 </script>
 
 <template>
-  <nav aria-label="软件分类" class="mx-auto max-w-7xl px-4 pt-2">
+  <!-- shrink-0：分类栏为固定高度区，不随卡片网格滚动、不被压缩 -->
+  <nav aria-label="软件分类" class="mx-auto max-w-7xl shrink-0 px-4 pt-2">
     <!--
       横向排列：移动端左对齐并允许横向滚动（scrollbar-width:none +
       WebKit 伪元素隐藏滚动条），sm 以上居中且不滚动。

@@ -104,7 +104,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:pb-10 sm:pt-6">
+  <!--
+    唯一的纵向滚动容器：
+    - w-full：显式宽度。section 是 flex-column 容器 main 的子项，而
+      mx-auto 的 auto 外边距在 flex 中会使元素放弃默认拉伸、改按内容
+      宽度收缩；瀑布流卡片为绝对定位无法撑开父容器，缺它会坍缩成一条；
+    - max-w-7xl + mx-auto：限宽 1280px 并水平居中（窄屏由 w-full 占满）；
+    - flex-1 + min-h-0：占满 main 的剩余高度，并允许在 flex 布局中收缩；
+    - overflow-y-auto：仅卡片网格区域内部滚动，头部/Hero/分类栏/页脚固定；
+    - overscroll-contain：滚动到边界时不发生滚动链穿透；
+    - 滚动条隐藏策略与全站一致（Firefox scrollbar-width + WebKit 伪元素），
+      仍可通过滚轮 / 触控板 / 触屏正常滚动。
+  -->
+  <section
+    class="mx-auto w-full max-w-7xl min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-4 [scrollbar-width:none] sm:pb-10 sm:pt-6 [&::-webkit-scrollbar]:hidden"
+  >
     <!--
       Waterfall：
       - list 驱动卡片集合，row-key 以 item.id 唯一识别（搜索过滤时

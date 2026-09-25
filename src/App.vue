@@ -2,12 +2,12 @@
 /**
  * 应用根组件
  * ------------------------------------------------------------------
- * 页面结构：
- *   顶部栏（搜索框 + 主题切换，sticky）
- *   → Hero 主视觉（站点名 / 简介 / 收录数量）
- *   → 分类导航栏（全部 + 各软件分类）
- *   → 软件卡片网格（分类 + 搜索双重过滤结果，响应式列数）
- *   → 页脚
+ * 页面结构（整页锁定视口高度，仅卡片网格区域内部滚动）：
+ *   顶部栏（搜索框 + 主题切换，固定不滚动）
+ *   → Hero 主视觉（站点名 / 简介 / 收录数量，固定不滚动）
+ *   → 分类导航栏（全部 + 各软件分类，固定不滚动）
+ *   → 软件卡片网格（flex-1 + min-h-0，唯一的纵向滚动容器）
+ *   → 页脚（固定在视口底部）
  */
 import { computed, ref, watch, watchEffect } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -56,14 +56,19 @@ const { keyword, results } = useSearch(softwareByCategory)
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <!--
+    h-dvh + overflow-hidden：整页锁定为视口高度且自身不滚动，
+    纵向 flex 划分「固定高度区（头/Hero/导航/页脚）+ 弹性网格区」。
+  -->
+  <div class="flex h-dvh flex-col overflow-hidden">
     <!-- 搜索关键词双向绑定到顶部输入框 -->
     <AppHeader v-model:keyword="keyword" />
 
     <!-- 主视觉区域：展示软件总数（总数不随搜索/分类变化） -->
     <HeroSection :total="total" />
 
-    <main class="flex-1">
+    <!-- min-h-0 允许弹性区域收缩到内容以下，滚动由内部网格区承担 -->
+    <main class="flex min-h-0 flex-1 flex-col">
       <!-- 分类导航栏：v-model 绑定当前选中分类 -->
       <CategoryNav v-model="activeCategory" :categories="categories" />
       <!-- 展示分类 + 搜索双重过滤后的结果；无匹配时网格内部渲染空状态 -->

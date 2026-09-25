@@ -16,8 +16,12 @@ const keyword = defineModel<string>('keyword', { default: '' })
 </script>
 
 <template>
+  <!--
+    固定在视口顶部的普通文档块（整页不滚动，无需 sticky）；
+    shrink-0 保证在纵向 flex 布局中不被压缩。
+  -->
   <header
-    class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80"
+    class="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80"
   >
     <div class="mx-auto max-w-7xl px-3 py-3 sm:px-4">
       <div class="flex items-center gap-3 md:gap-6">

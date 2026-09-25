@@ -15,7 +15,8 @@ defineProps<{
 </script>
 
 <template>
-  <section class="relative overflow-hidden">
+  <!-- shrink-0：主视觉为固定高度区，不随卡片网格滚动、不被压缩 -->
+  <section class="relative shrink-0 overflow-hidden">
     <!-- 背景光晕：纯装饰，不响应交互 -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0">
       <div
