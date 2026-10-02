@@ -8,6 +8,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { SoftwareItem } from '@/types'
+import { parseCssText } from '@/utils/style'
 import DownloadButton from './DownloadButton.vue'
 
 const { item } = defineProps<{
@@ -17,6 +18,13 @@ const { item } = defineProps<{
 
 /** 是否存在有效的第二组下载地址（配置了非空 links2 时才渲染第二个按钮） */
 const hasSecondaryLinks = computed(() => Array.isArray(item.links2) && item.links2.length > 0)
+
+/**
+ * logo 自定义内联样式对象：
+ * 将配置中的 CSS 文本（item.logoStyle）解析为对象后绑定。
+ * 必须用对象形式——@iconify/vue 的 <Icon> 会丢弃字符串形式的 style。
+ */
+const logoInlineStyle = computed(() => parseCssText(item.logoStyle))
 
 /** 两个下载按钮组件的实例引用，用于在一组展开面板时收起另一组（互斥） */
 const primaryBtnRef = ref<InstanceType<typeof DownloadButton> | null>(null)
@@ -191,26 +199,28 @@ function handleLogoError(event: Event) {
         即：只要配置了 logo，就不显示标题首字；logo 为空才显示。
       -->
       <div
-        class="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+        class="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden"
       >
         <!--
           Iconify 图标：单色图标以 currentColor 着色，默认中性深色；
-          配置了 logoColor 时内联样式覆盖默认色（内联样式优先级高于
-          class，且动态颜色值无法在构建时生成 Tailwind class）。
+          配置了 logoStyle 时通过内联样式覆盖默认样式（内联样式优先级
+          高于 class）。注意 @iconify/vue 只接受对象形式的 style，
+          CSS 文本需先经 parseCssText 解析。
         -->
         <Icon
           v-if="isIconifyName(item.logo)"
           :icon="item.logo"
           aria-hidden="true"
           class="absolute inset-0 h-full w-full text-slate-700 dark:text-slate-200"
-          :style="item.logoColor ? { color: item.logoColor } : undefined"
+          :style="logoInlineStyle"
         />
-        <!-- 图片地址：只渲染图片本身 -->
+        <!-- 图片地址：只渲染图片本身；logoStyle 解析为同一对象后生效 -->
         <img
           v-else-if="item.logo"
           :src="resolveImageUrl(item.logo)"
           :alt="`${item.title} logo`"
           class="absolute inset-0 h-full w-full"
+          :style="logoInlineStyle"
           loading="lazy"
           @error="handleLogoError"
         />

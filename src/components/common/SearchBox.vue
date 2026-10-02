@@ -25,7 +25,7 @@ const keyword = defineModel<string>({ default: '' })
     <input
       v-model="keyword"
       type="search"
-      placeholder="搜索软件名称或说明…"
+      placeholder="分类搜索软件名或说明，支持模糊匹配"
       aria-label="搜索软件"
       class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:focus:bg-slate-900"
     />

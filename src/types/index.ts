@@ -88,10 +88,13 @@ export interface SoftwareItem {
    */
   downloadText2?: string
   /**
-   * logo 颜色（可选）：仅对 Iconify 单色图标生效（如 '#07c160'）。
-   * 不配置时使用默认中性色；图片地址类型的 logo 不受影响。
+   * logo 自定义样式（可选）：标准 CSS 文本字符串（如 'color: #f8d714'），
+   * 以内联样式作用于 logo 元素。内联样式优先级高于组件内置的 class 样式，
+   * 因此这里的配置会覆盖默认样式，未配置时保持默认样式不变。
+   * Iconify 图标与图片地址类型的 logo 均生效
+   * （图片可配置 object-fit、padding、border-radius 等属性）。
    */
-  logoColor?: string
+  logoStyle?: string
   /**
    * 下载地址数组：
    * - 长度为 1 时，点击按钮直接下载
