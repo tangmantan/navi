@@ -9,12 +9,20 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import type { SoftwareItem } from '@/types'
 import { parseCssText } from '@/utils/style'
+import { siteConfig } from '@/config'
 import DownloadButton from './DownloadButton.vue'
 
 const { item } = defineProps<{
   /** 单个软件的完整展示数据 */
   item: SoftwareItem
 }>()
+
+/**
+ * 顶部信息区是否为 stacked 布局：
+ * 由 siteConfig.cardLayout 控制（horizontal 默认 / stacked）。
+ * stacked 时 logo 与标题同行，说明在 logo 下方占满整行宽度。
+ */
+const isStackedLayout = computed(() => siteConfig.cardLayout === 'stacked')
 
 /** 是否存在有效的第二组下载地址（配置了非空 links2 时才渲染第二个按钮） */
 const hasSecondaryLinks = computed(() => Array.isArray(item.links2) && item.links2.length > 0)
@@ -188,8 +196,17 @@ function handleLogoError(event: Event) {
       :aria-label="`访问 ${item.title} 官网`"
       class="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
     />
-    <!-- 顶部信息区：logo + 标题/说明 -->
-    <div class="flex items-start gap-4">
+    <!--
+      顶部信息区：logo + 标题 + 说明。
+      使用 CSS Grid 命名区域（见文件底部 <style>），同一套 DOM 在两种布局间切换，
+      布局由 siteConfig.cardLayout 控制：
+      - horizontal（默认）：logo 在左并跨两行，标题/说明纵向排在其右侧；
+      - stacked：logo 与标题在第一行，说明移至第二行占满整宽（logo 下方）。
+    -->
+    <div
+      class="card-header"
+      :class="isStackedLayout ? 'card-header--stacked' : 'card-header--horizontal'"
+    >
       <!--
         logo 容器：固定 48×48 占位，overflow-hidden 裁剪溢出，
         默认不带背景色。logo 不随卡片悬停放大。
@@ -199,7 +216,7 @@ function handleLogoError(event: Event) {
         即：只要配置了 logo，就不显示标题首字；logo 为空才显示。
       -->
       <div
-        class="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden"
+        class="card-header__logo relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden"
       >
         <!--
           Iconify 图标：单色图标以 currentColor 着色，默认中性深色；
@@ -233,21 +250,24 @@ function handleLogoError(event: Event) {
         </span>
       </div>
 
-      <div class="min-w-0">
-        <h3 class="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
-          {{ item.title }}
-        </h3>
-        <!--
-          说明区：line-clamp-3 超出三行省略，min-h-[4.875em] 固定占用
-          三行高度（leading-relaxed 行高 1.625 × 3），即使文案不足三行，
-          所有卡片默认高度仍保持一致。
-        -->
-        <p
-          class="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400 min-h-[4.875em] line-clamp-3"
-        >
-          {{ item.description }}
-        </p>
-      </div>
+      <!-- min-w-0 使 grid 轨道内的 truncate 能正常截断超长标题 -->
+      <h3
+        class="card-header__title min-w-0 truncate text-base font-semibold text-slate-900 dark:text-slate-100"
+      >
+        {{ item.title }}
+      </h3>
+      <!--
+        说明区：line-clamp-3 超出三行省略，min-h-[4.875em] 固定占用
+        三行高度（leading-relaxed 行高 1.625 × 3），即使文案不足三行，
+        所有卡片默认高度仍保持一致。
+        horizontal 时排在 logo 右侧；stacked 时经 grid-area 移至
+        logo 下方并占满整行宽度（与标题的间距由 card-header 的 row-gap 控制）。
+      -->
+      <p
+        class="card-header__desc min-h-[4.875em] line-clamp-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400"
+      >
+        {{ item.description }}
+      </p>
     </div>
 
     <!--
@@ -300,3 +320,44 @@ function handleLogoError(event: Event) {
     </div>
   </article>
 </template>
+
+<style scoped>
+/**
+ * 卡片顶部信息区 Grid 布局
+ * ------------------------------------------------------------------
+ * 两列固定为 [logo(auto) | 文案(1fr)]，通过 grid-template-areas
+ * 重排三个直接子元素（logo / title / desc），两种布局共用一套 DOM：
+ * - horizontal：logo 区域跨两行（'logo title' / 'logo desc'），
+ *   与原 flex 布局等价，logo 顶部对齐；
+ * - stacked：logo 与标题共享第一行（'logo title'），
+ *   说明独占第二行整宽（'desc desc'），logo 与标题垂直居中对齐。
+ */
+.card-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 1rem; /* gap-4：logo 与文案的横向间距 */
+}
+.card-header--horizontal {
+  align-items: start;
+  row-gap: 0.25rem; /* 对应原标题与说明之间的 mt-1 */
+  grid-template-areas:
+    'logo title'
+    'logo desc';
+}
+.card-header--stacked {
+  align-items: center;
+  row-gap: 0.75rem; /* logo/标题行 与 说明行之间的间距 */
+  grid-template-areas:
+    'logo title'
+    'desc desc';
+}
+.card-header__logo {
+  grid-area: logo;
+}
+.card-header__title {
+  grid-area: title;
+}
+.card-header__desc {
+  grid-area: desc;
+}
+</style>

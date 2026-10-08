@@ -70,6 +70,7 @@ npm run preview
 | `tagline` | 一句话简介，显示在标题下方 |
 | `footer` | 页脚内容，留空字符串则不渲染页脚 |
 | `downloadPanelMode` | 多地址面板形态：`inline`（内联展开）或 `popover`（浮层弹出） |
+| `cardLayout` | _（可选）_ 卡片顶部布局：`horizontal`（logo 在左，标题与说明排在右侧，默认值）或 `stacked`（logo 与标题同一行，说明在 logo 下方占满卡片整宽） |
 | `recommendedText` | _（可选）_ 标记为 `recommended` 的下载地址上显示的徽标文案，不配置时默认为「推荐」 |
 | `repo` | 可选。开源仓库地址，配置后顶栏主题按钮左侧会显示 GitHub 图标链接 |
 | `theme` | 可选。默认主题模式：`light` 亮色 / `dark` 暗色 / `system` 跟随系统（默认）。仅在用户未曾手动切换主题时生效 |
@@ -142,7 +143,7 @@ npm run preview
 
 ```json
 {
-  "site": { "name": "...", "tagline": "...", "footer": "...", "downloadPanelMode": "inline" },
+  "site": { "name": "...", "tagline": "...", "footer": "...", "downloadPanelMode": "inline", "cardLayout": "stacked" },
   "software": [
     { "id": "...", "title": "...", "category": "...", "description": "...", "logo": "...", "links": [{ "name": "...", "url": "..." }] }
   ]

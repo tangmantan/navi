@@ -70,6 +70,7 @@ All configuration lives in a single file: **`config.json` at the project root**,
 | `tagline` | One-line tagline, shown below the title |
 | `footer` | Footer content; set to an empty string to hide the footer |
 | `downloadPanelMode` | Multi-link panel style: `inline` (expand in place) or `popover` (floating panel) |
+| `cardLayout` | _(optional)_ Card header layout: `horizontal` (logo on the left, title and description beside it — default) or `stacked` (logo and title share the first row, description spans the full card width below the logo) |
 | `recommendedText` | _(optional)_ Badge label shown on download links marked as `recommended`; defaults to `推荐` (Recommended) |
 | `repo` | Optional open-source repository URL. When set, a GitHub icon link appears in the header to the left of the theme toggle |
 | `theme` | Optional default theme mode: `light`, `dark`, or `system` (default). Only applies until the user switches themes manually |
@@ -142,7 +143,7 @@ The API must return JSON with the same structure as `config.json`:
 
 ```json
 {
-  "site": { "name": "...", "tagline": "...", "footer": "...", "downloadPanelMode": "inline" },
+  "site": { "name": "...", "tagline": "...", "footer": "...", "downloadPanelMode": "inline", "cardLayout": "stacked" },
   "software": [
     { "id": "...", "title": "...", "category": "...", "description": "...", "logo": "...", "links": [{ "name": "...", "url": "..." }] }
   ]

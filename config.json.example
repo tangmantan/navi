@@ -6,6 +6,7 @@
     "repo": "https://github.com/tangmantan/navi",
     "theme": "system",
     "downloadPanelMode": "inline",
+    "cardLayout": "stacked",
     "recommendedText": "推荐"
   },
   "software": [

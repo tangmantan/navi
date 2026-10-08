@@ -14,6 +14,13 @@ export type ThemeMode = 'light' | 'dark' | 'system'
  */
 export type DownloadPanelMode = 'inline' | 'popover'
 
+/**
+ * 卡片顶部信息区的布局方式：
+ * - horizontal：logo 在左，标题与说明纵向排列在 logo 右侧（默认）
+ * - stacked：logo 与标题在同一行，说明移至下一行并占满卡片整宽
+ */
+export type CardLayoutMode = 'horizontal' | 'stacked'
+
 /** 下载地址（单个软件可配置一个或多个） */
 export interface DownloadLink {
   /** 下载源名称，例如：官网、GitHub Releases、蓝奏云、百度网盘 */
@@ -47,6 +54,13 @@ export interface SiteConfig {
   theme?: ThemeMode
   /** 多下载地址的面板展示方式：inline 内联展开 / popover 浮层弹出 */
   downloadPanelMode: DownloadPanelMode
+  /**
+   * 卡片顶部信息区布局（可选）：
+   * horizontal 左右布局（logo 在左、标题与说明在右，默认值）；
+   * stacked 上下布局（logo 与标题同行，说明在 logo 下方占满整宽）。
+   * 不配置时默认 horizontal。
+   */
+  cardLayout?: CardLayoutMode
   /**
    * 推荐下载地址的徽标文案（可选）：
    * 某条下载地址配置 recommended: true 时，在地址列表面板中显示该徽标；
