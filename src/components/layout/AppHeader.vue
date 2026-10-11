@@ -10,9 +10,39 @@ import { Icon } from '@iconify/vue'
 import githubIcon from '@iconify-icons/lucide/github'
 import SearchBox from '@/components/common/SearchBox.vue'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
+import type { SearchSuggestGroup, SoftwareItem } from '@/types'
 
 // 透传给 SearchBox 的搜索关键词（App.vue 持有真实状态）
 const keyword = defineModel<string>('keyword', { default: '' })
+
+defineProps<{
+  /** suggest 模式下按分类聚合的搜索结果分组（App.vue 计算传入） */
+  suggestGroups?: SearchSuggestGroup[]
+}>()
+
+const emit = defineEmits<{
+  /** 点击下拉面板中的结果项（转发给 App.vue 更新卡片网格） */
+  (e: 'select', item: SoftwareItem): void
+  /** 点击下拉面板中的分类分组标题（转发给 App.vue 按分类限定命中结果） */
+  (e: 'selectCategory', category: string): void
+  /** 回车提交搜索（转发给 App.vue 显示全部分类命中结果） */
+  (e: 'submit'): void
+}>()
+
+/** 转发 SearchBox 的结果项点击事件 */
+function onSelect(item: SoftwareItem) {
+  emit('select', item)
+}
+
+/** 转发 SearchBox 的分类分组标题点击事件 */
+function onSelectCategory(category: string) {
+  emit('selectCategory', category)
+}
+
+/** 转发 SearchBox 的回车提交事件 */
+function onSubmit() {
+  emit('submit')
+}
 </script>
 
 <template>
@@ -21,7 +51,7 @@ const keyword = defineModel<string>('keyword', { default: '' })
     shrink-0 保证在纵向 flex 布局中不被压缩。
   -->
   <header
-    class="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80"
+    class="relative z-50 shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80"
   >
     <div class="mx-auto max-w-7xl px-3 py-3 sm:px-4">
       <div class="flex items-center gap-3 md:gap-6">
@@ -37,7 +67,14 @@ const keyword = defineModel<string>('keyword', { default: '' })
 
         <!-- 右侧操作区：搜索框弹性占满剩余空间，GitHub/主题按钮固定宽度 -->
         <div class="flex flex-1 items-center justify-end gap-2">
-          <SearchBox v-model="keyword" class="w-full max-w-xs sm:max-w-sm" />
+          <SearchBox
+            v-model="keyword"
+            :groups="suggestGroups"
+            @select="onSelect"
+            @select-category="onSelectCategory"
+            @submit="onSubmit"
+            class="w-full max-w-xs sm:max-w-sm"
+          />
           <!-- 开源仓库链接（site.repo 配置后显示），样式与主题按钮保持一致 -->
           <a
             v-if="siteConfig.repo"

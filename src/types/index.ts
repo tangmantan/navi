@@ -21,6 +21,26 @@ export type DownloadPanelMode = 'inline' | 'popover'
  */
 export type CardLayoutMode = 'horizontal' | 'stacked'
 
+/**
+ * 搜索结果的展示方式：
+ * - filter：关键词实时过滤下方卡片网格（默认）
+ * - suggest：结果以面板形式显示在搜索框下方，按分类分组展示标题与说明；
+ *   点击结果项后，卡片网格切换为仅显示该软件
+ */
+export type SearchMode = 'filter' | 'suggest'
+
+/**
+ * 搜索建议面板的分组数据（searchMode 为 suggest 时使用）：
+ * 按分类聚合的搜索命中结果，分组顺序与分类在数据中首次出现的顺序一致
+ * （与分类导航栏一致）。
+ */
+export interface SearchSuggestGroup {
+  /** 分类名称（面板中的分组标题） */
+  category: string
+  /** 该分类下命中的软件列表 */
+  items: SoftwareItem[]
+}
+
 /** 下载地址（单个软件可配置一个或多个） */
 export interface DownloadLink {
   /** 下载源名称，例如：官网、GitHub Releases、蓝奏云、百度网盘 */
@@ -62,11 +82,29 @@ export interface SiteConfig {
    */
   cardLayout?: CardLayoutMode
   /**
+   * 搜索结果展示方式（可选）：
+   * suggest 结果面板显示在搜索框下方，按分类分组展示标题与说明，
+   * 点击结果项后卡片网格切换为仅显示该软件（默认值）；
+   * filter 关键词实时过滤下方卡片网格。
+   * 不配置时默认 suggest。
+   */
+  searchMode?: SearchMode
+  /**
+   * 搜索框占位提示文案（可选）：
+   * 显示在顶部搜索框中的 placeholder；不配置时使用内置默认文案。
+   */
+  searchPlaceholder?: string
+  /**
    * 推荐下载地址的徽标文案（可选）：
    * 某条下载地址配置 recommended: true 时，在地址列表面板中显示该徽标；
    * 不配置时默认显示「推荐」。
    */
   recommendedText?: string
+  /**
+   * 首次加载时默认选中的分类（可选）：
+   * 需与 software 中的分类名一致；不配置或该分类不存在时为「全部」。
+   */
+  defaultCategory?: string
 }
 
 /** 软件展示条目 */

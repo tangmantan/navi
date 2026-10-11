@@ -39,7 +39,7 @@ defineProps<{
         {{ siteConfig.tagline }}
       </p>
 
-      <p class="mt-3 text-sm text-slate-400">
+      <p class="mt-1 text-xs text-slate-400">
         共收录 {{ total }} 款常用软件
       </p>
     </div>

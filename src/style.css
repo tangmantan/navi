@@ -40,6 +40,15 @@
     transition-duration: 200ms;
     transition-timing-function: ease;
   }
+
+  /*
+   * 搜索输入框（type="search"）右侧的原生清除按钮（小叉）：
+   * 它是 ::-webkit-search-cancel-button 伪元素而非 DOM 节点，
+   * 默认光标为箭头，这里改为手型以提示可点击。
+   */
+  input[type='search']::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
 }
 
 /* ------------------------------------------------------------------

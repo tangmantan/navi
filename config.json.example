@@ -7,7 +7,10 @@
     "theme": "system",
     "downloadPanelMode": "inline",
     "cardLayout": "stacked",
-    "recommendedText": "推荐"
+    "searchMode": "suggest",
+    "searchPlaceholder": "搜索软件名或介绍，支持模糊匹配",
+    "recommendedText": "推荐",
+    "defaultCategory": "装机必备"
   },
   "software": [
     {

@@ -60,7 +60,7 @@ In development, the config is validated automatically: duplicate `id` values or 
 
 ## Configuration Guide
 
-All configuration lives in a single file: **`config.json` at the project root**, with two top-level keys — `site` (site info) and `software` (software list). Optionally, the data can be loaded from a remote API instead (see section 3).
+All configuration lives in a single file: **`config.json` at the project root**, with two top-level keys — `site` (site info) and `software` (software list). Optionally, the data can be loaded from a remote API instead (see section 3); when a remote API is configured, `config.json` becomes optional.
 
 ### 1. Site info: `site` in `config.json`
 
@@ -71,7 +71,10 @@ All configuration lives in a single file: **`config.json` at the project root**,
 | `footer` | Footer content; set to an empty string to hide the footer |
 | `downloadPanelMode` | Multi-link panel style: `inline` (expand in place) or `popover` (floating panel) |
 | `cardLayout` | _(optional)_ Card header layout: `horizontal` (logo on the left, title and description beside it — default) or `stacked` (logo and title share the first row, description spans the full card width below the logo) |
+| `searchMode` | _(optional)_ Search result display: `suggest` (results appear in a panel below the search box, grouped by category with title and description; clicking a result shows only that software in the card grid, clicking a category group header shows all matched cards of that category, and pressing Enter shows all matched cards across categories — the category nav follows all three actions, switching to the corresponding category or All — default) or `filter` (keywords filter the card grid as you type) |
+| `searchPlaceholder` | _(optional)_ Placeholder text shown in the search box; defaults to `搜索软件名或介绍，支持模糊匹配` |
 | `recommendedText` | _(optional)_ Badge label shown on download links marked as `recommended`; defaults to `推荐` (Recommended) |
+| `defaultCategory` | _(optional)_ Category selected on first load; must match a category name in `software`. Falls back to All when unset or when the category does not exist |
 | `repo` | Optional open-source repository URL. When set, a GitHub icon link appears in the header to the left of the theme toggle |
 | `theme` | Optional default theme mode: `light`, `dark`, or `system` (default). Only applies until the user switches themes manually |
 
@@ -130,7 +133,7 @@ Mark a link with `"recommended": true` to show a badge next to its name in the l
 
 ### 3. Remote data source: `.env` (optional)
 
-By default the page reads the local `config.json`. To load data from a remote API instead:
+By default the page reads the local `config.json`. To load data from a remote API instead (which makes `config.json` optional):
 
 1. Copy `.env.example` to `.env` (`.env` is git-ignored).
 2. Set the API address:
@@ -152,9 +155,9 @@ The API must return JSON with the same structure as `config.json`:
 
 Behavior:
 
-- The page first renders with the local `config.json`, then swaps in the remote data once the request succeeds (title, categories, cards and footer all update automatically).
-- If `VITE_API_URL` is unset or empty, the local `config.json` is used — this is the default.
-- If the request fails or returns an invalid structure, the site falls back to the local `config.json` and prints a warning to the console.
+- The page first renders with the local `config.json` (when present), then swaps in the remote data once the request succeeds (title, categories, cards and footer all update automatically).
+- If `VITE_API_URL` is unset or empty, the local `config.json` is used — this is the default; if `config.json` is also missing, the page renders with empty data.
+- If the request fails or returns an invalid structure, the site falls back to the local `config.json` (or empty data if absent) and prints a warning to the console.
 - If the currently selected category does not exist in the remote data, the filter automatically resets to "All".
 
 Notes: `VITE_API_URL` is read when the dev server starts / the project builds — restart or rebuild after changing `.env`. The API must also allow CORS requests from your site's origin.
